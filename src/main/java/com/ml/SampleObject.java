@@ -6,8 +6,10 @@ public class SampleObject {
 
 	private int id;
 	private String classLabel;
-	private ArrayList<String> sampleValues;
+	private Boolean classLabelValue;
 	
+	private ArrayList<String> sampleValues;
+
 	public SampleObject(int id, String label, ArrayList<String> sampleValues) {
 	
 		super();
@@ -18,6 +20,14 @@ public class SampleObject {
 	
 	public SampleObject(){}
 
+	public Boolean getClassLabelValue() {
+		return classLabelValue;
+	}
+
+	public void setClassLabelValue(Boolean classLabelValue) {
+		this.classLabelValue = classLabelValue;
+	}
+	
 	public int getId() {
 		return id;
 	}
@@ -48,6 +58,7 @@ public class SampleObject {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((classLabel == null) ? 0 : classLabel.hashCode());
+		result = prime * result + ((classLabelValue == null) ? 0 : classLabelValue.hashCode());
 		result = prime * result + id;
 		result = prime * result + ((sampleValues == null) ? 0 : sampleValues.hashCode());
 		return result;
@@ -67,6 +78,11 @@ public class SampleObject {
 				return false;
 		} else if (!classLabel.equals(other.classLabel))
 			return false;
+		if (classLabelValue == null) {
+			if (other.classLabelValue != null)
+				return false;
+		} else if (!classLabelValue.equals(other.classLabelValue))
+			return false;
 		if (id != other.id)
 			return false;
 		if (sampleValues == null) {
@@ -79,7 +95,8 @@ public class SampleObject {
 
 	@Override
 	public String toString() {
-		return "SampleObject [id=" + id + ", label=" + classLabel + ", sampleValues=" + sampleValues + "]";
+		return "SampleObject [id=" + id + ", classLabel=" + classLabel + ", classLabelValue=" + classLabelValue
+				+ ", sampleValues=" + sampleValues + "]";
 	}
 	
 	

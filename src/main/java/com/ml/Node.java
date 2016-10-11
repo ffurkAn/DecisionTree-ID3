@@ -14,6 +14,14 @@ public class Node {
 		this.attribute = attribute;
 		this.parent = parent;
 	}
+	
+	
+	public Node() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+
 	public ArrayList<Node> getChildren() {
 		return children;
 	}

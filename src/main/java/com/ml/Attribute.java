@@ -6,15 +6,35 @@ public class Attribute {
 
 	private ArrayList<String> values;
 	private String name;
+	private int columnIndex;
+	private int mostCommonValueSampleIndex;
 	
-	public Attribute(ArrayList<String> values, String name) {
+	public Attribute(ArrayList<String> values, String name, int columnIndex) {
 		super();
 		this.values = values;
 		this.name = name;
+		this.columnIndex = columnIndex;
 	}
 	
 	public Attribute(){}
+
+	public int getColumnIndex() {
+		return columnIndex;
+	}
+
+	public void setColumnIndex(int columnIndex) {
+		this.columnIndex = columnIndex;
+	}
 	
+	
+	public int getMostCommonValueSampleIndex() {
+		return mostCommonValueSampleIndex;
+	}
+
+	public void setMostCommonValueSampleIndex(int mostCommonValueSampleIndex) {
+		this.mostCommonValueSampleIndex = mostCommonValueSampleIndex;
+	}
+
 	public ArrayList<String> getValues() {
 		return values;
 	}
@@ -28,37 +48,8 @@ public class Attribute {
 		this.name = name;
 	}
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((values == null) ? 0 : values.hashCode());
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Attribute other = (Attribute) obj;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (values == null) {
-			if (other.values != null)
-				return false;
-		} else if (!values.equals(other.values))
-			return false;
-		return true;
-	}
-	@Override
 	public String toString() {
-		return "Attribute [values=" + values + ", name=" + name + "]";
+		return "Attribute [values=" + values + ", name=" + name + ", columnIndex=" + columnIndex + "]";
 	}
 	
 	

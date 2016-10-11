@@ -3,7 +3,11 @@ package com.ml;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -19,6 +23,18 @@ public class DataTable {
 	private String relationName;
 	private ArrayList<Attribute> attributes;
 	private ArrayList<SampleObject> samples;
+	private HashMap<String, Boolean> targetAttributes;
+	
+	
+	public HashMap<String, Boolean> getTargetAttributes() {
+		return targetAttributes;
+	}
+
+
+	public void setTargetAttributes(HashMap<String, Boolean> targetAttributes) {
+		this.targetAttributes = targetAttributes;
+	}
+
 	private ArrayList<TreeMap<String, Integer>> strToEnum;
 	private ArrayList<TreeMap<Integer, String>> enumToStr;
 	
@@ -29,6 +45,9 @@ public class DataTable {
 		strToEnum = new ArrayList<>();
 		enumToStr = new ArrayList<>();
 		samples = new ArrayList<>();
+		targetAttributes = new HashMap<>();
+		targetAttributes.put(CLASS_LABEL_FALSE, Boolean.FALSE);
+		targetAttributes.put(CLASS_LABEL_TRUE, Boolean.TRUE);
 		
 	}
 
@@ -92,6 +111,7 @@ public class DataTable {
 		result = prime * result + ((relationName == null) ? 0 : relationName.hashCode());
 		result = prime * result + ((samples == null) ? 0 : samples.hashCode());
 		result = prime * result + ((strToEnum == null) ? 0 : strToEnum.hashCode());
+		result = prime * result + ((targetAttributes == null) ? 0 : targetAttributes.hashCode());
 		return result;
 	}
 
@@ -130,6 +150,11 @@ public class DataTable {
 				return false;
 		} else if (!strToEnum.equals(other.strToEnum))
 			return false;
+		if (targetAttributes == null) {
+			if (other.targetAttributes != null)
+				return false;
+		} else if (!targetAttributes.equals(other.targetAttributes))
+			return false;
 		return true;
 	}
 
@@ -137,7 +162,8 @@ public class DataTable {
 	@Override
 	public String toString() {
 		return "DataTable [relationName=" + relationName + ", attributes=" + attributes + ", samples=" + samples
-				+ ", strToEnum=" + strToEnum + ", enumToStr=" + enumToStr + "]";
+				+ ", targetAttributes=" + targetAttributes + ", strToEnum=" + strToEnum + ", enumToStr=" + enumToStr
+				+ "]";
 	}
 	
 	
@@ -145,6 +171,7 @@ public class DataTable {
 		
 		int sampleId = 0;
 		boolean readData = false;
+		int attributeColumnCounter = 0;
 		
 		Scanner s = new Scanner(new File(fileName));
 		while (s.hasNext()) {
@@ -182,6 +209,7 @@ public class DataTable {
 						Attribute attribute = new Attribute();
 						attribute.setName(attributeName);
 						attribute.setValues(new ArrayList<>());
+						attribute.setColumnIndex(attributeColumnCounter++);
 						
 						// parse the values for attribute
 						
@@ -191,7 +219,7 @@ public class DataTable {
 							Scanner c = new Scanner(values);
 							c.useDelimiter(",");
 							while (c.hasNext()) {
-								String value = trimUndesiredCharacters(c.next().trim());
+								String value = c.next().trim();
 								
 								if(value.length() > 0)
 								{
@@ -235,10 +263,11 @@ public class DataTable {
 									textValue = MISSING_VALUE;
 								}else if(CLASS_LABEL_TRUE.equals(textValue.toLowerCase()) || CLASS_LABEL_FALSE.equals(textValue.toLowerCase())){
 									sample.setClassLabel(textValue.toLowerCase());
+									sample.setClassLabelValue(Boolean.valueOf(textValue.toLowerCase()));
 								}
 								
 							}
-							sample.getSampleValues().add(trimUndesiredCharacters(textValue));
+							sample.getSampleValues().add(textValue/*trimUndesiredCharacters(textValue)*/);
 						}
 						
 						samples.add(sample);
@@ -262,6 +291,43 @@ public class DataTable {
 		dirtyValue = dirtyValue.replace("\\", "");
 		
 		return dirtyValue;
+	}
+
+
+	/**
+	 * Attribute içindeki valuelardan kaçar tane kullanýlmýþ
+	 * Missing deðerler için MOST COMMON VALUE kullanýlmýþtýr.
+	 * @param attIndex
+	 * @param samples2
+	 * @return
+	 */
+	public ArrayList<Integer> getAttributeValueOccurrences(int attIndex, ArrayList<SampleObject> samples) {
+		
+		int valueCountOfAttribute = valueCount(attIndex);
+		
+		// attribute.value occurrences, #of positive sample
+		ArrayList<Integer> occurrences = new ArrayList<>();
+		
+		for (int i = 0; i < valueCountOfAttribute; i++) {
+			int occurrenceCount = 0;
+			occurrences.add(new Integer(occurrenceCount));
+			for(int j = 0; j < samples.size(); j++){
+				
+				// Returns the value at the specified row<j> and column<attIndex>
+				// and compares it with the attribute value
+				if(samples.get(j).getSampleValues().get(attIndex).equals(enumToStr.get(attIndex).get(i))){
+					occurrences.set(i, new Integer(++occurrenceCount));
+				}
+			}
+			occurrences.add(occurrenceCount);
+		}
+		return occurrences;
+
+	}
+
+
+	private int valueCount(int attIndex) {
+		 return enumToStr.get(attIndex).size();
 	}
 
 }
