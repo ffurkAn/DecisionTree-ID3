@@ -85,14 +85,31 @@ public class ID3 {
 			HashMap<String, Boolean> targetAttributes) {
 
 		// attribute value occurrences for the attribute with index @attIndex
-		ArrayList<Integer> valueOccurrences = dataTable.getAttributeValueOccurrences(attIndex,samples);
+		ArrayList<Occurrence> valueOccurrences = dataTable.getAttributeValueOccurrences(attIndex,samples);
 		
+		int totalOccurrenceOfAttribute = getTotalOccurrencesOfAttribute(valueOccurrences);
 		
-		return 0;
+		double gain = 0;
+		
+		for (Occurrence occurrence : valueOccurrences) {
+			gain += (-1) * (occurrence.getNumberOfoccurrences() / totalOccurrenceOfAttribute) * calculateEntropy(occurrence.getNumberOfPositiveOccurrences(),occurrence.getNumberOfoccurrences()-occurrence.getNumberOfPositiveOccurrences());
+		}
+		return gain;
 	}
 
 	
-	public void calculateEntropy(){
+	private int getTotalOccurrencesOfAttribute(ArrayList<Occurrence> valueOccurrences) {
+
+		int total = 0;
+		for (Occurrence occurrence : valueOccurrences) {
+			
+			total += occurrence.getNumberOfoccurrences();
+		}
+		
+		return total;
+	}
+
+	public void calculateEntropy() {
 		
 		int total = dataTable.getSamples().size();
 		int positives = 0;
@@ -107,16 +124,21 @@ public class ID3 {
 			}
 		}
 		
-		double positiveRatio = (double)positives/total;
-		double negativeRatio = (double)negatives/total;
+		entropy = calculateEntropy(positives,negatives);
+		
+	}
+	
+	public double calculateEntropy(int positives, int negatives){
+		
+		double positiveRatio = (double)positives/dataTable.getSamples().size();
+		double negativeRatio = (double)negatives/dataTable.getSamples().size();
 
 		if (positiveRatio != 0)
 			positiveRatio = -(positiveRatio) * (Math.log(positiveRatio)/Math.log(2));
 		if (negativeRatio != 0)
 			negativeRatio = - (negativeRatio) * (Math.log(negativeRatio)/Math.log(2));
 
-		entropy = positiveRatio + negativeRatio;
-
+		return positiveRatio + negativeRatio;
 		
 	}
 	
@@ -152,6 +174,8 @@ public class ID3 {
 		return true;
 		
 	}
+
+	
 
 	
 	

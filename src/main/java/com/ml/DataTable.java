@@ -301,25 +301,29 @@ public class DataTable {
 	 * @param samples2
 	 * @return
 	 */
-	public ArrayList<Integer> getAttributeValueOccurrences(int attIndex, ArrayList<SampleObject> samples) {
+	public ArrayList<Occurrence> getAttributeValueOccurrences(int attIndex, ArrayList<SampleObject> samples) {
 		
 		int valueCountOfAttribute = valueCount(attIndex);
 		
 		// attribute.value occurrences, #of positive sample
-		ArrayList<Integer> occurrences = new ArrayList<>();
+		ArrayList<Occurrence> occurrences = new ArrayList<>();
 		
 		for (int i = 0; i < valueCountOfAttribute; i++) {
 			int occurrenceCount = 0;
-			occurrences.add(new Integer(occurrenceCount));
+			occurrences.add(new Occurrence(0,0));
 			for(int j = 0; j < samples.size(); j++){
 				
 				// Returns the value at the specified row<j> and column<attIndex>
 				// and compares it with the attribute value
 				if(samples.get(j).getSampleValues().get(attIndex).equals(enumToStr.get(attIndex).get(i))){
-					occurrences.set(i, new Integer(++occurrenceCount));
+					
+					occurrences.get(i).setNumberOfoccurrences(occurrences.get(i).getNumberOfoccurrences()+1);
+					if(samples.get(j).getClassLabelValue()){
+						occurrences.get(i).setNumberOfPositiveOccurrences(occurrences.get(i).getNumberOfPositiveOccurrences()+1);
+					}
 				}
 			}
-			occurrences.add(occurrenceCount);
+//			occurrences.add(occurrence);
 		}
 		return occurrences;
 
