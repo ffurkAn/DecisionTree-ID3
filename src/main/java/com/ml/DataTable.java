@@ -3,8 +3,10 @@ package com.ml;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -21,10 +23,12 @@ public class DataTable {
 	private static final String ATTRIBUTE = "@attribute";
 	
 	private String relationName;
-	private ArrayList<Attribute> attributes;
-	private ArrayList<SampleObject> samples;
+	private List<Attribute> attributes;
+	private List<SampleObject> samples;
 	private HashMap<String, Boolean> targetAttributes;
-	
+	private List<TreeMap<String, Integer>> strToEnum;
+	private List<TreeMap<Integer, String>> enumToStr;
+		
 	
 	public HashMap<String, Boolean> getTargetAttributes() {
 		return targetAttributes;
@@ -34,10 +38,6 @@ public class DataTable {
 	public void setTargetAttributes(HashMap<String, Boolean> targetAttributes) {
 		this.targetAttributes = targetAttributes;
 	}
-
-	private ArrayList<TreeMap<String, Integer>> strToEnum;
-	private ArrayList<TreeMap<Integer, String>> enumToStr;
-	
 	
 	public DataTable() {
 		relationName = "";
@@ -62,37 +62,37 @@ public class DataTable {
 	}
 
 
-	public ArrayList<Attribute> getAttributes() {
+	public List<Attribute> getAttributes() {
 		return attributes;
 	}
 
 
-	public void setAttributes(ArrayList<Attribute> attributes) {
+	public void setAttributes(List<Attribute> attributes) {
 		this.attributes = attributes;
 	}
 
 
-	public ArrayList<SampleObject> getSamples() {
+	public List<SampleObject> getSamples() {
 		return samples;
 	}
 
 
-	public void setSamples(ArrayList<SampleObject> samples) {
+	public void setSamples(List<SampleObject> samples) {
 		this.samples = samples;
 	}
 
 
-	public ArrayList<TreeMap<String, Integer>> getStrToEnum() {
+	public List<TreeMap<String, Integer>> getStrToEnum() {
 		return strToEnum;
 	}
 
 
-	public void setStrToEnum(ArrayList<TreeMap<String, Integer>> strToEnum) {
+	public void setStrToEnum(List<TreeMap<String, Integer>> strToEnum) {
 		this.strToEnum = strToEnum;
 	}
 
 
-	public ArrayList<TreeMap<Integer, String>> getEnumToStr() {
+	public List<TreeMap<Integer, String>> getEnumToStr() {
 		return enumToStr;
 	}
 
@@ -208,7 +208,7 @@ public class DataTable {
 						
 						Attribute attribute = new Attribute();
 						attribute.setName(attributeName);
-						attribute.setValues(new ArrayList<>());
+						attribute.setValues(new LinkedHashSet<>());
 						attribute.setColumnIndex(attributeColumnCounter++);
 						
 						// parse the values for attribute
@@ -301,7 +301,7 @@ public class DataTable {
 	 * @param samples2
 	 * @return
 	 */
-	public ArrayList<Occurrence> getAttributeValueOccurrences(int attIndex, ArrayList<SampleObject> samples) {
+	public ArrayList<Occurrence> getAttributeValueOccurrences(int attIndex, List<SampleObject> list) {
 		
 		int valueCountOfAttribute = valueCount(attIndex);
 		
@@ -311,14 +311,14 @@ public class DataTable {
 		for (int i = 0; i < valueCountOfAttribute; i++) {
 			int occurrenceCount = 0;
 			occurrences.add(new Occurrence(0,0));
-			for(int j = 0; j < samples.size(); j++){
+			for(int j = 0; j < list.size(); j++){
 				
 				// Returns the value at the specified row<j> and column<attIndex>
 				// and compares it with the attribute value
-				if(samples.get(j).getSampleValues().get(attIndex).equals(enumToStr.get(attIndex).get(i))){
+				if(list.get(j).getSampleValues().get(attIndex).equals(enumToStr.get(attIndex).get(i))){
 					
 					occurrences.get(i).setNumberOfoccurrences(occurrences.get(i).getNumberOfoccurrences()+1);
-					if(samples.get(j).getClassLabelValue()){
+					if(list.get(j).getClassLabelValue()){
 						occurrences.get(i).setNumberOfPositiveOccurrences(occurrences.get(i).getNumberOfPositiveOccurrences()+1);
 					}
 				}
@@ -332,6 +332,12 @@ public class DataTable {
 
 	private int valueCount(int attIndex) {
 		 return enumToStr.get(attIndex).size();
+	}
+
+
+	public List<SampleObject> getTrimmedSamples(int columnIndex, String value, List<SampleObject> samples2) {
+		return samples2;
+		
 	}
 
 }

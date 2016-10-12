@@ -6,8 +6,9 @@ public class Leaf extends Node {
 
 	private Label classLabel;
 	
-	public Leaf(Label label) {
+	public Leaf(Label label,int id) {
 		this.classLabel = label;
+		super.setNodeId(id);
 	}
 
 	public Label getClassLabel() {

@@ -6,8 +6,10 @@ public class Node {
 
 	private ArrayList<Node> children;
 	private Attribute attribute;
-	
+	private int nodeId;
 	private Node parent;
+	
+
 	public Node(ArrayList<Node> children, Attribute attribute, Node parent) {
 		super();
 		this.children = children;
@@ -15,10 +17,23 @@ public class Node {
 		this.parent = parent;
 	}
 	
-	
 	public Node() {
 		super();
 		// TODO Auto-generated constructor stub
+	}
+
+	public Node(Attribute attribute){
+		this.attribute = attribute;
+	}
+	
+
+	public int getNodeId() {
+		return nodeId;
+	}
+
+
+	public void setNodeId(int nodeId) {
+		this.nodeId = nodeId;
 	}
 
 

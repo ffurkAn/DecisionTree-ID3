@@ -1,15 +1,17 @@
 package com.ml;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 public class Attribute {
 
-	private ArrayList<String> values;
+	private LinkedHashSet<String> values;
 	private String name;
 	private int columnIndex;
 	private int mostCommonValueSampleIndex;
+	private boolean isProccessed = false;
 	
-	public Attribute(ArrayList<String> values, String name, int columnIndex) {
+	public Attribute(LinkedHashSet<String> values, String name, int columnIndex) {
 		super();
 		this.values = values;
 		this.name = name;
@@ -17,6 +19,14 @@ public class Attribute {
 	}
 	
 	public Attribute(){}
+	
+	public boolean isProccessed() {
+		return isProccessed;
+	}
+
+	public void setProccessed(boolean isProccessed) {
+		this.isProccessed = isProccessed;
+	}
 
 	public int getColumnIndex() {
 		return columnIndex;
@@ -35,10 +45,10 @@ public class Attribute {
 		this.mostCommonValueSampleIndex = mostCommonValueSampleIndex;
 	}
 
-	public ArrayList<String> getValues() {
+	public LinkedHashSet<String> getValues() {
 		return values;
 	}
-	public void setValues(ArrayList<String> values) {
+	public void setValues(LinkedHashSet<String> values) {
 		this.values = values;
 	}
 	public String getName() {

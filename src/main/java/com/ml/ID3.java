@@ -2,12 +2,14 @@ package com.ml;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class ID3 {
 
 	private DataTable dataTable;
 	private double entropy;
+	private int nodeCount = 0;
 	
 	public ID3() {
 
@@ -35,35 +37,44 @@ public class ID3 {
 		return runID3(dataTable.getSamples(), dataTable.getTargetAttributes(), dataTable.getAttributes());
 	}
 	
-	public Node runID3 (ArrayList<SampleObject> samples, HashMap<String, Boolean> targetAttributes, ArrayList<Attribute> attributes) {
+	public Node runID3 (List<SampleObject> samples, HashMap<String, Boolean> targetAttributes, List<Attribute> attributes) {
+		
+		nodeCount++;
 		
 		if(areAllSamplesPositive(samples, Boolean.TRUE)){
-			return new Leaf(new Label(Boolean.TRUE));
+			return new Leaf(new Label(Boolean.TRUE),nodeCount);
 		}
 		
 		if(areAllSamplesNegative(samples, Boolean.TRUE)){
-			return new Leaf(new Label(Boolean.FALSE));
+			return new Leaf(new Label(Boolean.FALSE),nodeCount);
 		}
 		
 		// else
 		Attribute bestAttribute = findBestAttribute(samples,targetAttributes,attributes);
+		bestAttribute.setProccessed(true);
+		Node root = new Node(bestAttribute);
+		
+		for (String value : bestAttribute.getValues()) {
 			
+			List<SampleObject> valueSamples = dataTable.getTrimmedSamples(bestAttribute.getColumnIndex(),value,samples);
+		}
+		
 		
 		return null;
 		
 		
 	}
 	
-	private Attribute findBestAttribute(ArrayList<SampleObject> samples, HashMap<String, Boolean> targetAttributes,
-			ArrayList<Attribute> attributes) {
+	private Attribute findBestAttribute(List<SampleObject> list, HashMap<String, Boolean> targetAttributes,
+			List<Attribute> list2) {
 		
 		double bestGain = -999;
 		int bestAttribute = -999;
 		
-		for (Attribute attribute : attributes) {
+		for (Attribute attribute : list2) {
 			
 			int attIndex = attribute.getColumnIndex();
-			double gain = calculateGain(attIndex,samples,targetAttributes);
+			double gain = calculateGain(attIndex,list,targetAttributes);
 			
 			
 			if (gain >= bestGain) {
@@ -72,7 +83,7 @@ public class ID3 {
 			}
 		}
 		
-		for (Attribute attribute : attributes) {
+		for (Attribute attribute : list2) {
 			if (attribute.getColumnIndex() == bestAttribute)
 				return attribute;
 		}
@@ -81,24 +92,24 @@ public class ID3 {
 
 
 
-	private double calculateGain(int attIndex, ArrayList<SampleObject> samples,
+	// TODO paydayý samples.size() mý yapmalýyýz
+	private double calculateGain(int attIndex, List<SampleObject> list,
 			HashMap<String, Boolean> targetAttributes) {
 
 		// attribute value occurrences for the attribute with index @attIndex
-		ArrayList<Occurrence> valueOccurrences = dataTable.getAttributeValueOccurrences(attIndex,samples);
+		List<Occurrence> valueOccurrences = dataTable.getAttributeValueOccurrences(attIndex,list);
 		
 		int totalOccurrenceOfAttribute = getTotalOccurrencesOfAttribute(valueOccurrences);
 		
 		double gain = 0;
-		
 		for (Occurrence occurrence : valueOccurrences) {
-			gain += (-1) * (occurrence.getNumberOfoccurrences() / totalOccurrenceOfAttribute) * calculateEntropy(occurrence.getNumberOfPositiveOccurrences(),occurrence.getNumberOfoccurrences()-occurrence.getNumberOfPositiveOccurrences());
+			gain += (-1) * ((double)occurrence.getNumberOfoccurrences() / totalOccurrenceOfAttribute) * calculateEntropy(occurrence.getNumberOfPositiveOccurrences(),occurrence.getNumberOfoccurrences()-occurrence.getNumberOfPositiveOccurrences());
 		}
-		return gain;
+		return gain + entropy;
 	}
 
 	
-	private int getTotalOccurrencesOfAttribute(ArrayList<Occurrence> valueOccurrences) {
+	private int getTotalOccurrencesOfAttribute(List<Occurrence> valueOccurrences) {
 
 		int total = 0;
 		for (Occurrence occurrence : valueOccurrences) {
@@ -144,27 +155,27 @@ public class ID3 {
 	
 	/**
 	 * 
-	 * @param samples
+	 * @param list
 	 * @param targetValue
 	 * @return
 	 */
-	private boolean areAllSamplesNegative(ArrayList<SampleObject> samples, Boolean targetValue) {
-		return areAllSamplesBelongToSameClass(samples,targetValue);
+	private boolean areAllSamplesNegative(List<SampleObject> list, Boolean targetValue) {
+		return areAllSamplesBelongToSameClass(list,targetValue);
 	}
 
 	/**
 	 * 
-	 * @param samples
+	 * @param list
 	 * @param targetValue
 	 * @return
 	 */
-	private boolean areAllSamplesPositive(ArrayList<SampleObject> samples, Boolean targetValue) {
-		return areAllSamplesBelongToSameClass(samples,targetValue);
+	private boolean areAllSamplesPositive(List<SampleObject> list, Boolean targetValue) {
+		return areAllSamplesBelongToSameClass(list,targetValue);
 	}
 
-	private boolean areAllSamplesBelongToSameClass(ArrayList<SampleObject> samples, Boolean targetValue ){
+	private boolean areAllSamplesBelongToSameClass(List<SampleObject> list, Boolean targetValue ){
 		
-		for (SampleObject sampleObject : samples) {
+		for (SampleObject sampleObject : list) {
 			
 			if(sampleObject.getClassLabelValue().booleanValue() != targetValue.booleanValue()){
 				return false;
