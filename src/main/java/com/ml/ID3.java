@@ -9,12 +9,10 @@ import java.util.List;
 public class ID3 {
 
 	private TableManager tableManager;
-	private double entropy;
 	private int nodeCount;
 	
 	public ID3() {
 		nodeCount = 0;
-		entropy = 0.0;
 		tableManager = new TableManager();
 	}
 
@@ -29,18 +27,10 @@ public class ID3 {
 	}
 
 
-	public double getEntropy() {
-		return entropy;
-	}
-
-	public void setEntropy(double entropy) {
-		this.entropy = entropy;
-	}
-
 	public Node buildTree(DataTable dataSet){
 		
 		System.out.println("Calculating general entropy..");
-		calculateGeneralEntropy(dataSet);
+		dataSet.calculateGeneralEntropy();
 		LinkedHashSet<Attribute> attributes = createAllAttributes(dataSet.getAttributes());
 		System.out.println("Building tree..");
 		return runID3(dataSet,attributes);
@@ -82,6 +72,8 @@ public class ID3 {
 				root.addBranch(value,leaf);
 				
 			}else{
+				
+				valueDataSet.calculateGeneralEntropy();
 				attributes.remove(bestAttribute);
 				root.addBranch(value, runID3(valueDataSet,attributes));
 				attributes.add(bestAttribute);
@@ -157,10 +149,10 @@ public class ID3 {
 				int positiveOccurrences = occurrence.getNumberOfPositiveOccurrences();
 				int negativeOccurrences = occurrence.getNumberOfoccurrences()-occurrence.getNumberOfPositiveOccurrences();
 				
-				gain += (-1) * ((double)occurrence.getNumberOfoccurrences() / totalOccurrenceOfAttribute) * calculateEntropy(positiveOccurrences,negativeOccurrences,sizeOfTotalOccurrences);
+				gain += (-1) * ((double)occurrence.getNumberOfoccurrences() / totalOccurrenceOfAttribute) * dataSet.calculateEntropy(positiveOccurrences,negativeOccurrences,sizeOfTotalOccurrences);
 			}
 		}
-		return gain + entropy;
+		return gain + dataSet.getEntropy();
 	}
 
 	
@@ -175,38 +167,7 @@ public class ID3 {
 		return total;
 	}
 
-	public void calculateGeneralEntropy(DataTable dataSet) {
-		
-		int size = dataSet.getSamples().size();
-		int positives = 0;
-		int negatives = 0;
-		
-		for (SampleObject sampleObject : dataSet.getSamples()) {
-			
-			if( sampleObject.getClassLabelValue()){
-				positives++;
-			}else{
-				negatives++;
-			}
-		}
-		
-		entropy = calculateEntropy(positives,negatives,size);
-		
-	}
 	
-	public double calculateEntropy(int positives, int negatives, int size){
-		
-		double positiveRatio = (double)positives/size;
-		double negativeRatio = (double)negatives/size;
-
-		if (positiveRatio != 0)
-			positiveRatio = -(positiveRatio) * (Math.log(positiveRatio)/Math.log(2));
-		if (negativeRatio != 0)
-			negativeRatio = - (negativeRatio) * (Math.log(negativeRatio)/Math.log(2));
-
-		return positiveRatio + negativeRatio;
-		
-	}
 	
 	/**
 	 * 

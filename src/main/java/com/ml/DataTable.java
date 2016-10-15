@@ -29,6 +29,7 @@ public class DataTable {
 	private HashMap<String, Boolean> targetAttributes;
 	private List<TreeMap<String, Integer>> strToEnum;
 	private List<TreeMap<Integer, String>> enumToStr;
+	private double entropy;
 
 
 	public HashMap<String, Boolean> getTargetAttributes() {
@@ -41,6 +42,7 @@ public class DataTable {
 	}
 
 	public DataTable() {
+		entropy = 0.0;
 		relationName = "";
 		attributes = new ArrayList<>();
 		strToEnum = new ArrayList<>();
@@ -52,6 +54,16 @@ public class DataTable {
 
 	}
 
+
+
+	public double getEntropy() {
+		return entropy;
+	}
+
+
+	public void setEntropy(double entropy) {
+		this.entropy = entropy;
+	}
 
 
 	public List<Attribute> getAttributes() {
@@ -110,7 +122,7 @@ public class DataTable {
 	public String toString() {
 		return "DataTable [relationName=" + relationName + ", attributes=" + attributes + ", samples=" + samples
 				+ ", targetAttributes=" + targetAttributes + ", strToEnum=" + strToEnum + ", enumToStr=" + enumToStr
-				+ "]";
+				+ ", entropy=" + entropy + "]";
 	}
 
 
@@ -121,7 +133,7 @@ public class DataTable {
 		int attributeIndex = 0;
 
 		Scanner s = new Scanner(new File(fileName));
-		
+
 		System.out.println("Started to parsing file..");
 		while (s.hasNext()) {
 
@@ -136,7 +148,7 @@ public class DataTable {
 					Scanner a = new Scanner(line);
 					String firstToken = a.next().toLowerCase();
 
-					
+
 					if (firstToken.toLowerCase().equals(RELATION)) {
 						relationName = a.nextLine();
 						System.out.println("@Relation extracted.");
@@ -155,10 +167,10 @@ public class DataTable {
 						if (line.indexOf("'") == 11){
 							attributeName = "'" + attributeName + "'";
 						}
-						
-//						attributes.add(attributeName);
+
+						//						attributes.add(attributeName);
 						if(!attributeName.toLowerCase().equals(CLASS)){
-							
+
 							Attribute attribute = new Attribute();
 							attribute.setName(attributeName);
 							attribute.setValues(new LinkedHashSet<>());
@@ -215,15 +227,15 @@ public class DataTable {
 
 								sample.getSampleValues().add(textValue/*trimUndesiredCharacters(textValue)*/);
 							}
-							
+
 						}
 
 						// remove the classifier
 						String classLabel = sample.getSampleValues().remove(sample.getSampleValues().size()-1);
 						sample.setClassLabel(classLabel.toLowerCase());
 						sample.setClassLabelValue(Boolean.valueOf(classLabel.toLowerCase()));
-//						System.out.println(sample.getSampleValues().size()+"");
-						
+						//						System.out.println(sample.getSampleValues().size()+"");
+
 						if(sample.getSampleValues().size() != 274){
 							System.out.println("eksik deðer.. SampleId:" + sample.getId());
 						}
@@ -238,13 +250,46 @@ public class DataTable {
 
 
 		}
-		
+
 		System.out.println("@Data extracted.");
 
 
 	}
 
+	public void calculateGeneralEntropy() {
 
-	
+		int size = getSamples().size();
+		int positives = 0;
+		int negatives = 0;
+
+		for (SampleObject sampleObject : getSamples()) {
+
+			if( sampleObject.getClassLabelValue()){
+				positives++;
+			}else{
+				negatives++;
+			}
+		}
+
+		entropy = calculateEntropy(positives,negatives,size);
+
+	}
+
+	public double calculateEntropy(int positives, int negatives, int size){
+
+		double positiveRatio = (double)positives/size;
+		double negativeRatio = (double)negatives/size;
+
+		if (positiveRatio != 0)
+			positiveRatio = -(positiveRatio) * (Math.log(positiveRatio)/Math.log(2));
+		if (negativeRatio != 0)
+			negativeRatio = - (negativeRatio) * (Math.log(negativeRatio)/Math.log(2));
+
+		return positiveRatio + negativeRatio;
+
+	}
+
+
+
 
 }
