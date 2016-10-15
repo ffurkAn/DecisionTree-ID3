@@ -1,16 +1,19 @@
 package com.ml;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
 
 public class Node {
 
-	private ArrayList<Node> children;
+	private LinkedHashMap<String, Node> children;
 	private Attribute attribute;
 	private int nodeId;
 	private Node parent;
+	private int level;
 	
 
-	public Node(ArrayList<Node> children, Attribute attribute, Node parent) {
+	public Node(LinkedHashMap<String, Node> children, Attribute attribute, Node parent) {
 		super();
 		this.children = children;
 		this.attribute = attribute;
@@ -18,14 +21,30 @@ public class Node {
 	}
 	
 	public Node() {
-		super();
-		// TODO Auto-generated constructor stub
+		children = new LinkedHashMap<>();
 	}
 
 	public Node(Attribute attribute){
 		this.attribute = attribute;
+		children = new LinkedHashMap<>();
 	}
 	
+
+	public LinkedHashMap<String, Node> getChildren() {
+		return children;
+	}
+
+	public void setChildren(LinkedHashMap<String, Node> children) {
+		this.children = children;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
 
 	public int getNodeId() {
 		return nodeId;
@@ -37,12 +56,6 @@ public class Node {
 	}
 
 
-	public ArrayList<Node> getChildren() {
-		return children;
-	}
-	public void setChildren(ArrayList<Node> children) {
-		this.children = children;
-	}
 	public Attribute getAttribute() {
 		return attribute;
 	}
@@ -96,6 +109,14 @@ public class Node {
 	public String toString() {
 		return "Node [children=" + children + ", attribute=" + attribute + ", parent=" + parent + "]";
 	}
+
+	public void addBranch(String value, Node childNode) {
+		children.put(value, childNode);
+	}
+
+
+	
+
 	
 	
 	

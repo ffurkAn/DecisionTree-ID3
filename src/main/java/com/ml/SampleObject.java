@@ -7,7 +7,6 @@ public class SampleObject {
 	private int id;
 	private String classLabel;
 	private Boolean classLabelValue;
-	
 	private ArrayList<String> sampleValues;
 
 	public SampleObject(int id, String label, ArrayList<String> sampleValues) {

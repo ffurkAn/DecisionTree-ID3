@@ -2,28 +2,33 @@ package com.ml;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 
 public class ID3 {
 
-	private DataTable dataTable;
+	private TableManager tableManager;
 	private double entropy;
-	private int nodeCount = 0;
+	private int nodeCount;
 	
 	public ID3() {
-
+		nodeCount = 0;
+		entropy = 0.0;
+		tableManager = new TableManager();
 	}
 
-	public DataTable getDataTable() {
-		return dataTable;
-	}
-
-
-	public void setDataTable(DataTable dataTable) {
-		this.dataTable = dataTable;
-	}
 	
+	public int getNodeCount() {
+		return nodeCount;
+	}
+
+
+	public void setNodeCount(int nodeCount) {
+		this.nodeCount = nodeCount;
+	}
+
+
 	public double getEntropy() {
 		return entropy;
 	}
@@ -32,49 +37,93 @@ public class ID3 {
 		this.entropy = entropy;
 	}
 
-	public Node buildTree() {
+	public Node buildTree(DataTable dataSet){
 		
-		return runID3(dataTable.getSamples(), dataTable.getTargetAttributes(), dataTable.getAttributes());
+		System.out.println("Calculating general entropy..");
+		calculateGeneralEntropy(dataSet);
+		LinkedHashSet<Attribute> attributes = createAllAttributes(dataSet.getAttributes());
+		System.out.println("Building tree..");
+		return runID3(dataSet,attributes);
 	}
 	
-	public Node runID3 (List<SampleObject> samples, HashMap<String, Boolean> targetAttributes, List<Attribute> attributes) {
+	// this set does not include the target attribute
+		private LinkedHashSet<Attribute> createAllAttributes (List<Attribute> list) {
+			LinkedHashSet<Attribute> attributes = new LinkedHashSet<Attribute>();
+			for (Attribute attribute : list) {
+				attributes.add(attribute);
+			}
+			return attributes;
+		}
+		
+	public Node runID3 (DataTable dataSet, LinkedHashSet<Attribute> attributes) {
 		
 		nodeCount++;
 		
-		if(areAllSamplesPositive(samples, Boolean.TRUE)){
+		if(areAllSamplesPositive(dataSet.getSamples(), Boolean.TRUE)){
 			return new Leaf(new Label(Boolean.TRUE),nodeCount);
 		}
 		
-		if(areAllSamplesNegative(samples, Boolean.TRUE)){
+		if(areAllSamplesNegative(dataSet.getSamples(), Boolean.TRUE)){
 			return new Leaf(new Label(Boolean.FALSE),nodeCount);
 		}
 		
 		// else
-		Attribute bestAttribute = findBestAttribute(samples,targetAttributes,attributes);
+		Attribute bestAttribute = findBestAttribute(dataSet,attributes);
 		bestAttribute.setProccessed(true);
 		Node root = new Node(bestAttribute);
 		
 		for (String value : bestAttribute.getValues()) {
+			// TODO her datatable için entropy hesabý yapýlmalý
+			DataTable valueDataSet = TableManager.getTrimmedDataSet(bestAttribute.getColumnIndex(),value,dataSet);
 			
-			List<SampleObject> valueSamples = dataTable.getTrimmedSamples(bestAttribute.getColumnIndex(),value,samples);
+			if(valueDataSet.getSamples().isEmpty()){
+				
+				Leaf leaf = new Leaf(getMostCommonUsedClassLabel(dataSet.getSamples()), nodeCount);
+				root.addBranch(value,leaf);
+				
+			}else{
+				attributes.remove(bestAttribute);
+				root.addBranch(value, runID3(valueDataSet,attributes));
+				attributes.add(bestAttribute);
+			}
 		}
 		
-		
-		return null;
+		return root;
 		
 		
 	}
 	
-	private Attribute findBestAttribute(List<SampleObject> list, HashMap<String, Boolean> targetAttributes,
-			List<Attribute> list2) {
+	/**
+	 * returns the most common used target attribute in given samples
+	 * @param samples
+	 * @return
+	 */
+	private Label getMostCommonUsedClassLabel(List<SampleObject> samples) {
+
+		int positives = 0;
+		int negatives = 0;
+		
+		for (SampleObject sampleObject : samples) {
+			
+			if(sampleObject.getClassLabelValue()){
+				positives++;
+			}else{
+				negatives++;
+			}
+		}
+		
+		return positives > negatives ? new Label(Boolean.TRUE) : new Label(Boolean.FALSE);
+	}
+
+	private Attribute findBestAttribute(DataTable dataSet, LinkedHashSet<Attribute> attributes) {
 		
 		double bestGain = -999;
 		int bestAttribute = -999;
 		
-		for (Attribute attribute : list2) {
+		for (Attribute attribute : attributes) {
 			
 			int attIndex = attribute.getColumnIndex();
-			double gain = calculateGain(attIndex,list,targetAttributes);
+			double gain = calculateGain(attIndex,dataSet);
 			
 			
 			if (gain >= bestGain) {
@@ -83,7 +132,7 @@ public class ID3 {
 			}
 		}
 		
-		for (Attribute attribute : list2) {
+		for (Attribute attribute : attributes) {
 			if (attribute.getColumnIndex() == bestAttribute)
 				return attribute;
 		}
@@ -92,18 +141,24 @@ public class ID3 {
 
 
 
-	// TODO paydayý samples.size() mý yapmalýyýz
-	private double calculateGain(int attIndex, List<SampleObject> list,
-			HashMap<String, Boolean> targetAttributes) {
+	// TODO paydayý samples.size() mý yapmalýyýz /totalOccurrenceOfAttribute
+	private double calculateGain(int attIndex, DataTable dataSet) {
 
 		// attribute value occurrences for the attribute with index @attIndex
-		List<Occurrence> valueOccurrences = dataTable.getAttributeValueOccurrences(attIndex,list);
+		List<Occurrence> valueOccurrences = tableManager.getAttributeValueOccurrences(attIndex,dataSet);
 		
 		int totalOccurrenceOfAttribute = getTotalOccurrencesOfAttribute(valueOccurrences);
 		
 		double gain = 0;
 		for (Occurrence occurrence : valueOccurrences) {
-			gain += (-1) * ((double)occurrence.getNumberOfoccurrences() / totalOccurrenceOfAttribute) * calculateEntropy(occurrence.getNumberOfPositiveOccurrences(),occurrence.getNumberOfoccurrences()-occurrence.getNumberOfPositiveOccurrences());
+			
+			if(occurrence.getNumberOfoccurrences()>0){
+				int sizeOfTotalOccurrences = occurrence.getNumberOfoccurrences();
+				int positiveOccurrences = occurrence.getNumberOfPositiveOccurrences();
+				int negativeOccurrences = occurrence.getNumberOfoccurrences()-occurrence.getNumberOfPositiveOccurrences();
+				
+				gain += (-1) * ((double)occurrence.getNumberOfoccurrences() / totalOccurrenceOfAttribute) * calculateEntropy(positiveOccurrences,negativeOccurrences,sizeOfTotalOccurrences);
+			}
 		}
 		return gain + entropy;
 	}
@@ -120,13 +175,13 @@ public class ID3 {
 		return total;
 	}
 
-	public void calculateEntropy() {
+	public void calculateGeneralEntropy(DataTable dataSet) {
 		
-		int total = dataTable.getSamples().size();
+		int size = dataSet.getSamples().size();
 		int positives = 0;
 		int negatives = 0;
 		
-		for (SampleObject sampleObject : dataTable.getSamples()) {
+		for (SampleObject sampleObject : dataSet.getSamples()) {
 			
 			if( sampleObject.getClassLabelValue()){
 				positives++;
@@ -135,14 +190,14 @@ public class ID3 {
 			}
 		}
 		
-		entropy = calculateEntropy(positives,negatives);
+		entropy = calculateEntropy(positives,negatives,size);
 		
 	}
 	
-	public double calculateEntropy(int positives, int negatives){
+	public double calculateEntropy(int positives, int negatives, int size){
 		
-		double positiveRatio = (double)positives/dataTable.getSamples().size();
-		double negativeRatio = (double)negatives/dataTable.getSamples().size();
+		double positiveRatio = (double)positives/size;
+		double negativeRatio = (double)negatives/size;
 
 		if (positiveRatio != 0)
 			positiveRatio = -(positiveRatio) * (Math.log(positiveRatio)/Math.log(2));
