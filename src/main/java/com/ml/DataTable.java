@@ -168,7 +168,7 @@ public class DataTable {
 							attributeName = "'" + attributeName + "'";
 						}
 
-						//						attributes.add(attributeName);
+						//	ignore the Class attribute
 						if(!attributeName.toLowerCase().equals(CLASS)){
 
 							Attribute attribute = new Attribute();

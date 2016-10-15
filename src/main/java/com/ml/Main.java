@@ -26,7 +26,11 @@ public class Main {
 		ID3 id3 = new ID3();
 		DecisionTree tree = new DecisionTree();
 		tree.setRootNode(id3.buildTree(datasetTable));
-
+		
+		
+		
+		tree.prune();
+		
 
 	}
 

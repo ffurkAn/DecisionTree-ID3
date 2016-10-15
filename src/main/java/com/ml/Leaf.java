@@ -1,14 +1,16 @@
 package com.ml;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class Leaf extends Node {
 
 	private Label classLabel;
+	private List<SampleObject> samples;
 	
-	public Leaf(Label label,int id) {
+	public Leaf(Label label,int id, List<SampleObject> samples) {
 		this.classLabel = label;
 		super.setNodeId(id);
+		this.samples = samples;
 	}
 
 	public Label getClassLabel() {
@@ -19,29 +21,14 @@ public class Leaf extends Node {
 		this.classLabel = classLabel;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((classLabel == null) ? 0 : classLabel.hashCode());
-		return result;
+
+	
+	public List<SampleObject> getSamples() {
+		return samples;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Leaf other = (Leaf) obj;
-		if (classLabel == null) {
-			if (other.classLabel != null)
-				return false;
-		} else if (!classLabel.equals(other.classLabel))
-			return false;
-		return true;
+	public void setSamples(List<SampleObject> samples) {
+		this.samples = samples;
 	}
 
 	@Override
