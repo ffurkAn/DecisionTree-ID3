@@ -28,12 +28,11 @@ public class Main {
 		tree.setRootNode(id3.buildTree(datasetTable));
 		
 		
+		String testFileName = "C:/Users/furkan/desktop/testingD.arff";
+		DataTable testDataTable = new DataTable();
+		testDataTable.loadArffToDataTable(testFileName);
+		tree.testTree(testDataTable);
 		
-		tree.prune();
-		
-
 	}
-
-
 
 }

@@ -2,15 +2,19 @@ package com.ml;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 
 public class Node {
 
+	private static final String MISSING_VALUE = "?";
 	private LinkedHashMap<String, Node> children;
 	private Attribute attribute;
 	private int nodeId;
 	private Node parent;
 	private int level;
+	private Label classLabel;
+	private List<SampleObject> samples;
 	
 
 	public Node(LinkedHashMap<String, Node> children, Attribute attribute, Node parent) {
@@ -29,6 +33,28 @@ public class Node {
 		children = new LinkedHashMap<>();
 	}
 	
+
+	public Node(int nodeCount) {
+		nodeId = nodeCount;
+		children = new LinkedHashMap<>();
+	}
+
+	
+	public Label getClassLabel() {
+		return classLabel;
+	}
+
+	public void setClassLabel(Label classLabel) {
+		this.classLabel = classLabel;
+	}
+
+	public List<SampleObject> getSamples() {
+		return samples;
+	}
+
+	public void setSamples(List<SampleObject> samples) {
+		this.samples = samples;
+	}
 
 	public LinkedHashMap<String, Node> getChildren() {
 		return children;
@@ -115,7 +141,48 @@ public class Node {
 	}
 
 
-	
+	/**
+	 * travels the tree and checks if it is matching with the leaf
+	 * @param sample
+	 * @param columnIndex
+	 * @return
+	 */
+	public String makeDecision(ArrayList<String> sample, int columnIndex) {
+
+		String classDecision = "false";
+		
+		if(children.isEmpty()){
+			return classLabel.getLabelStr();
+		}else{
+			
+			// if value is missing, choose the most cammon value branch
+			if(sample.get(columnIndex).equals(MISSING_VALUE)){
+				Node childNode = children.get(attribute.getMostCommonValue());
+				if(childNode.getAttribute() == null){
+					classDecision = childNode.getClassLabel().getLabelStr();
+				}else{
+					classDecision = childNode.makeDecision(sample, childNode.getAttribute().getColumnIndex());
+				}
+			}else{
+				for(String branchValue : children.keySet()){
+					String value = sample.get(columnIndex);
+					if(value.equals(branchValue)){
+						
+						Node childNode = children.get(branchValue);
+						if(childNode.getAttribute() == null){
+							classDecision = childNode.getClassLabel().getLabelStr();
+						}else{
+							classDecision = childNode.makeDecision(sample, childNode.getAttribute().getColumnIndex());
+						}
+					}
+				}
+			}
+			
+			
+		}
+		
+		return classDecision;
+	}
 
 	
 	

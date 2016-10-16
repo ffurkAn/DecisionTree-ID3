@@ -8,7 +8,7 @@ public class Attribute {
 	private LinkedHashSet<String> values;
 	private String name;
 	private int columnIndex;
-	private int mostCommonValueSampleIndex;
+	private String mostCommonValue;
 	private boolean isProccessed = false;
 	
 	public Attribute(LinkedHashSet<String> values, String name, int columnIndex) {
@@ -37,12 +37,12 @@ public class Attribute {
 	}
 	
 	
-	public int getMostCommonValueSampleIndex() {
-		return mostCommonValueSampleIndex;
+	public String getMostCommonValue() {
+		return mostCommonValue;
 	}
 
-	public void setMostCommonValueSampleIndex(int mostCommonValueSampleIndex) {
-		this.mostCommonValueSampleIndex = mostCommonValueSampleIndex;
+	public void setMostCommonValue(String mostCommonValueSampleIndex) {
+		this.mostCommonValue = mostCommonValueSampleIndex;
 	}
 
 	public LinkedHashSet<String> getValues() {

@@ -46,7 +46,7 @@ public class TableManager {
 		
 		for (int i = 0; i < valueCountOfAttribute; i++) {
 			int occurrenceCount = 0;
-			occurrences.add(new Occurrence(0,0));
+			occurrences.add(new Occurrence(0,0,dataSet.getEnumToStr().get(attIndex).get(i)));
 			for(int j = 0; j < samples.size(); j++){
 
 				// Returns the value at the specified row<j> and column<attIndex>

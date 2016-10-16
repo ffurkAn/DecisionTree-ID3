@@ -1,9 +1,13 @@
 package com.ml;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
+
 
 
 public class ID3 {
@@ -32,45 +36,74 @@ public class ID3 {
 
 		System.out.println("Calculating general entropy..");
 		dataSet.calculateGeneralEntropy();
-		LinkedHashSet<Attribute> attributes = createAllAttributes(dataSet.getAttributes());
+		LinkedHashSet<Attribute> attributes = createAllAttributesAndFindMostCommonUsedValue(dataSet);
 		System.out.println("Building tree..");
 		return runID3(dataSet,attributes);
 	}
 
 	// this set does not include the target attribute
-	private LinkedHashSet<Attribute> createAllAttributes (List<Attribute> list) {
+	private LinkedHashSet<Attribute> createAllAttributesAndFindMostCommonUsedValue (DataTable dataSet) {
 		LinkedHashSet<Attribute> attributes = new LinkedHashSet<Attribute>();
-		for (Attribute attribute : list) {
+		for (Attribute attribute : dataSet.getAttributes()) {
+
+			List<Occurrence> valueOccurrences = tableManager.getAttributeValueOccurrences(attribute.getColumnIndex(),dataSet);
+
+			String mostCommonValue = "";
+			int mostCommonValueCount = 0;
+			for (Occurrence occurrence : valueOccurrences) {
+
+				int numberOfOccurred = occurrence.getNumberOfoccurrences();
+
+				if(numberOfOccurred > mostCommonValueCount){
+					mostCommonValue = occurrence.getValueName();
+					mostCommonValueCount = numberOfOccurred;
+				}
+			}
+
+			attribute.setMostCommonValue(mostCommonValue);
 			attributes.add(attribute);
+
 		}
 		return attributes;
 	}
 
 	public Node runID3 (DataTable dataSet, LinkedHashSet<Attribute> attributes) {
 
+		Node root = new Node(nodeCount);
 		nodeCount++;
 
 		if(areAllSamplesPositive(dataSet.getSamples(), Boolean.TRUE)){
-			return new Leaf(new Label(Boolean.TRUE),nodeCount,dataSet.getSamples());
-		}
+			Label lbl = new Label(Boolean.TRUE);
+			root.setClassLabel(lbl);
+			root.setSamples(dataSet.getSamples());
 
-		if(areAllSamplesNegative(dataSet.getSamples(), Boolean.FALSE)){
-			return new Leaf(new Label(Boolean.FALSE),nodeCount,dataSet.getSamples());
-		}
+		}else if(areAllSamplesNegative(dataSet.getSamples(), Boolean.FALSE)){
+			Label lbl = new Label(Boolean.FALSE);
+			root.setClassLabel(lbl);
+			root.setSamples(dataSet.getSamples());
 
-		// else
-		Attribute bestAttribute = findBestAttribute(dataSet,attributes);
-		bestAttribute.setProccessed(true);
-		Node root = new Node(bestAttribute);
+		}else if(attributes.isEmpty()){
+			Label lbl = new Label(getMostCommonUsedClassLabel(dataSet.getSamples()).getLabelValue());
+			root.setClassLabel(lbl);
+			root.setSamples(dataSet.getSamples());
 
-		// TODO what is going to be a cutoff ?
-		int numberOfValuesInAttribute = bestAttribute.getValues().size();
-		double chiSquareStatistic = chiSquareTest(bestAttribute,dataSet);
-		
-		
-		if(chiSquareStatistic > threshold){
-			return new Leaf(new Label(getMostCommonUsedClassLabel(dataSet.getSamples()).getLabelValue()),nodeCount,dataSet.getSamples());
 		}else{
+
+			Attribute bestAttribute = findBestAttribute(dataSet,attributes);
+			bestAttribute.setProccessed(true);
+			root.setAttribute(bestAttribute);
+
+			// TODO what is going to be a cutoff ?
+			//			int numberOfValuesInAttribute = bestAttribute.getValues().size();
+			//			double chiSquareStatistic = chiSquareTest(bestAttribute,dataSet);
+			//			
+			//			
+			//			if(chiSquareStatistic > threshold){
+			//				Label lbl = new Label(getMostCommonUsedClassLabel(dataSet.getSamples()).getLabelValue());
+			//				root.setClassLabel(lbl);
+			//				root.setSamples(dataSet.getSamples());
+			//				
+			//			}else{
 
 			// split the set
 			for (String value : bestAttribute.getValues()) {
@@ -79,8 +112,10 @@ public class ID3 {
 
 				if(valueDataSet.getSamples().isEmpty()){
 
-					Leaf leaf = new Leaf(getMostCommonUsedClassLabel(dataSet.getSamples()), nodeCount,new ArrayList<>());
-					root.addBranch(value,leaf);
+					Node leafNode = new Node(nodeCount);
+					leafNode.setClassLabel(getMostCommonUsedClassLabel(dataSet.getSamples()));
+					leafNode.setSamples(new ArrayList<>());
+					root.addBranch(value,leafNode);
 
 				}else{
 					valueDataSet.calculateGeneralEntropy();
@@ -89,14 +124,9 @@ public class ID3 {
 					attributes.add(bestAttribute);
 				}
 			}
+			//			}
 		}
-
-
-
-
 		return root;
-
-
 	}
 
 	private double chiSquareTest(Attribute bestAttribute, DataTable dataSet) {
