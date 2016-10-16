@@ -14,7 +14,7 @@ public class ID3 {
 
 	private TableManager tableManager;
 	private int nodeCount;
-	private double threshold = 0.05;
+	private double threshold = 10;
 
 	public ID3() {
 		nodeCount = 0;
@@ -94,37 +94,37 @@ public class ID3 {
 			root.setAttribute(bestAttribute);
 
 			// TODO what is going to be a cutoff ?
-			//			int numberOfValuesInAttribute = bestAttribute.getValues().size();
-			//			double chiSquareStatistic = chiSquareTest(bestAttribute,dataSet);
+			int numberOfValuesInAttribute = bestAttribute.getValues().size();
+			double chiSquareStatistic = chiSquareTest(bestAttribute,dataSet);
 			//			
 			//			
-			//			if(chiSquareStatistic > threshold){
-			//				Label lbl = new Label(getMostCommonUsedClassLabel(dataSet.getSamples()).getLabelValue());
-			//				root.setClassLabel(lbl);
-			//				root.setSamples(dataSet.getSamples());
-			//				
-			//			}else{
+			if(chiSquareStatistic < threshold){
+				Label lbl = new Label(getMostCommonUsedClassLabel(dataSet.getSamples()).getLabelValue());
+				root.setClassLabel(lbl);
+				root.setSamples(dataSet.getSamples());
 
-			// split the set
-			for (String value : bestAttribute.getValues()) {
+			}else{
 
-				DataTable valueDataSet = TableManager.getTrimmedDataSet(bestAttribute.getColumnIndex(),value,dataSet);
+				// split the set
+				for (String value : bestAttribute.getValues()) {
 
-				if(valueDataSet.getSamples().isEmpty()){
+					DataTable valueDataSet = TableManager.getTrimmedDataSet(bestAttribute.getColumnIndex(),value,dataSet);
 
-					Node leafNode = new Node(nodeCount);
-					leafNode.setClassLabel(getMostCommonUsedClassLabel(dataSet.getSamples()));
-					leafNode.setSamples(new ArrayList<>());
-					root.addBranch(value,leafNode);
+					if(valueDataSet.getSamples().isEmpty()){
 
-				}else{
-					valueDataSet.calculateGeneralEntropy();
-					attributes.remove(bestAttribute);
-					root.addBranch(value, runID3(valueDataSet,attributes));
-					attributes.add(bestAttribute);
+						Node leafNode = new Node(nodeCount);
+						leafNode.setClassLabel(getMostCommonUsedClassLabel(dataSet.getSamples()));
+						leafNode.setSamples(new ArrayList<>());
+						root.addBranch(value,leafNode);
+
+					}else{
+						valueDataSet.calculateGeneralEntropy();
+						attributes.remove(bestAttribute);
+						root.addBranch(value, runID3(valueDataSet,attributes));
+						attributes.add(bestAttribute);
+					}
 				}
 			}
-			//			}
 		}
 		return root;
 	}
@@ -144,14 +144,17 @@ public class ID3 {
 		}
 
 		double deviation = 0.0;
-		for (Occurrence occurrence : occurrences) {
-			double positiveOccuured = occurrence.getNumberOfPositiveOccurrences();
-			double negativeOccurred = occurrence.getNumberOfoccurrences() - occurrence.getNumberOfPositiveOccurrences();
-			double positiveExpected = ((double)numberOfPositiveSamples / (numberOfNegativeSamples + numberOfPositiveSamples)) * numberOfAttributesOccured;
-			double megativeExpected = ((double)numberOfNegativeSamples / (numberOfNegativeSamples + numberOfPositiveSamples)) * numberOfAttributesOccured;
-			deviation +=  (Math.pow(positiveOccuured - positiveExpected, 2) / positiveExpected) + (Math.pow(negativeOccurred - megativeExpected, 2) / megativeExpected); 
+		if(numberOfAttributesOccured == 0){
+			return deviation;
+		}else{
+			for (Occurrence occurrence : occurrences) {
+				double positiveOccuured = occurrence.getNumberOfPositiveOccurrences();
+				double negativeOccurred = occurrence.getNumberOfoccurrences() - occurrence.getNumberOfPositiveOccurrences();
+				double positiveExpected = ((double)numberOfPositiveSamples / (numberOfNegativeSamples + numberOfPositiveSamples)) * numberOfAttributesOccured;
+				double megativeExpected = ((double)numberOfNegativeSamples / (numberOfNegativeSamples + numberOfPositiveSamples)) * numberOfAttributesOccured;
+				deviation +=  (Math.pow(positiveOccuured - positiveExpected, 2) / positiveExpected) + (Math.pow(negativeOccurred - megativeExpected, 2) / megativeExpected); 
+			}
 		}
-
 		return deviation;
 	}
 
