@@ -2,6 +2,7 @@ package com.ml;
 
 import java.util.List;
 
+@Deprecated
 public class Leaf extends Node {
 
 	private Label classLabel;

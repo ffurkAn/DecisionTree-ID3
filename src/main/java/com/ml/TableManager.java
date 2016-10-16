@@ -1,15 +1,18 @@
 package com.ml;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Scanner;
-import java.util.TreeMap;
 
 public class TableManager {
 
 	
+	/**
+	 * 
+	 * @param columnIndex
+	 * @param value
+	 * @param dataSet
+	 * @return
+	 */
 	public static DataTable getTrimmedDataSet(int columnIndex, String value, DataTable dataSet) {
 
 		DataTable trimmedDataSet = new DataTable();
@@ -29,13 +32,12 @@ public class TableManager {
 	}
 	
 	/**
-	 * Attribute içindeki valuelardan kaçar tane kullanýlmýþ
-	 * Missing deðerler için MOST COMMON VALUE kullanýlmýþtýr.
-	 * @param attIndex
-	 * @param samples2
+	 * Returns the list of each value occurrence
+	 * @param attIndex, attribute columnIndex
+	 * @param dataSet
 	 * @return
 	 */
-	public ArrayList<Occurrence> getAttributeValueOccurrences(int attIndex, DataTable dataSet) {
+	public static ArrayList<Occurrence> getAttributeValueOccurrences(int attIndex, DataTable dataSet) {
 
 		// attribute.value occurrences, #of positive sample
 		ArrayList<Occurrence> occurrences = new ArrayList<>();
@@ -45,7 +47,6 @@ public class TableManager {
 		List<SampleObject> samples = dataSet.getSamples();
 		
 		for (int i = 0; i < valueCountOfAttribute; i++) {
-			int occurrenceCount = 0;
 			occurrences.add(new Occurrence(0,0,dataSet.getEnumToStr().get(attIndex).get(i)));
 			for(int j = 0; j < samples.size(); j++){
 
@@ -65,7 +66,12 @@ public class TableManager {
 	}
 	
 
-	// trim ' \ / ( ) [ ] ; characters from value
+	/**
+	 * trim ' \ / ( ) [ ] ; characters from value
+	 * @param dirtyValue
+	 * @return
+	 */
+	@Deprecated
 	private String trimUndesiredCharacters(String dirtyValue){
 		dirtyValue = dirtyValue.replaceAll("[\\'\\;/]", "");
 		dirtyValue = dirtyValue.replace("\\", "");
@@ -73,4 +79,39 @@ public class TableManager {
 		return dirtyValue;
 	}
 
+	/**
+	 * calculates chi-squared statistic of the data
+	 * @param bestAttribute
+	 * @param dataSet
+	 * @return
+	 */
+	public static double chiSquareTest(Attribute bestAttribute, DataTable dataSet) {
+
+		int attributeColumnIndex = bestAttribute.getColumnIndex();
+
+		List<Occurrence> occurrences = TableManager.getAttributeValueOccurrences(attributeColumnIndex, dataSet);
+
+		int numberOfPositiveSamples = dataSet.getNumberOfInstances(Boolean.TRUE);
+		int numberOfNegativeSamples = dataSet.getNumberOfInstances(Boolean.FALSE);	
+		int numberOfAttributesOccured = 0;
+
+		for (Occurrence occurrence : occurrences) {
+			numberOfAttributesOccured += occurrence.getNumberOfoccurrences();
+		}
+
+		double deviation = 0.0;
+		if(numberOfAttributesOccured == 0){
+			return deviation;
+		}else{
+			// for every value in attribute value set
+			for (Occurrence occurrence : occurrences) {
+				double positiveOccuured = occurrence.getNumberOfPositiveOccurrences();
+				double negativeOccurred = occurrence.getNumberOfoccurrences() - occurrence.getNumberOfPositiveOccurrences();
+				double positiveExpected = ((double)numberOfPositiveSamples / (numberOfNegativeSamples + numberOfPositiveSamples)) * numberOfAttributesOccured;
+				double megativeExpected = ((double)numberOfNegativeSamples / (numberOfNegativeSamples + numberOfPositiveSamples)) * numberOfAttributesOccured;
+				deviation +=  (Math.pow(positiveOccuured - positiveExpected, 2) / positiveExpected) + (Math.pow(negativeOccurred - megativeExpected, 2) / megativeExpected); 
+			}
+		}
+		return deviation;
+	}
 }

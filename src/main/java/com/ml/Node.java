@@ -3,6 +3,7 @@ package com.ml;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 
 public class Node {
@@ -164,11 +165,11 @@ public class Node {
 					classDecision = childNode.makeDecision(sample, childNode.getAttribute().getColumnIndex());
 				}
 			}else{
-				for(String branchValue : children.keySet()){
+				for(Entry<String,Node> entry : children.entrySet()){
 					String value = sample.get(columnIndex);
-					if(value.equals(branchValue)){
+					if(value.equals(entry.getKey())){
 						
-						Node childNode = children.get(branchValue);
+						Node childNode = children.get(entry.getKey());
 						if(childNode.getAttribute() == null){
 							classDecision = childNode.getClassLabel().getLabelStr();
 						}else{

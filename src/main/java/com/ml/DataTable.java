@@ -1,24 +1,27 @@
 package com.ml;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+/**
+ * Class for responsible for holding the samples.
+ * Missing values '?' remains same
+ * @author furkan
+ *
+ */
 public class DataTable {
 
+	Logger logger = Logger.getGlobal();
+	
 	private static final String CLASS = "class";
 	private static final String CLASS_LABEL_FALSE = "false";
 	private static final String CLASS_LABEL_TRUE = "true";
-	private static final String MISSING_VALUE = "?";
 	private static final String DATA = "@data";
 	private static final String RELATION = "@relation";
 	private static final String ATTRIBUTE = "@attribute";
@@ -27,6 +30,8 @@ public class DataTable {
 	private List<Attribute> attributes;
 	private List<SampleObject> samples;
 	private HashMap<String, Boolean> targetAttributes;
+	
+	// holds the attribute values as <value,index> pair
 	private List<TreeMap<String, Integer>> strToEnum;
 	private List<TreeMap<Integer, String>> enumToStr;
 	private double entropy;
@@ -125,7 +130,12 @@ public class DataTable {
 				+ ", entropy=" + entropy + "]";
 	}
 
-
+	/**
+	 * 
+	 * Loads the arff file to DataTable
+	 * @param fileName
+	 * @throws Exception
+	 */
 	public void loadArffToDataTable(String fileName) throws Exception{
 
 		int sampleId = 0;
@@ -135,6 +145,7 @@ public class DataTable {
 		Scanner s = new Scanner(new File(fileName));
 
 		System.out.println("Started to parsing file..");
+		logger.info("Started to parsing file..");
 		while (s.hasNext()) {
 
 			String line = s.nextLine().trim();
@@ -148,11 +159,13 @@ public class DataTable {
 					Scanner a = new Scanner(line);
 					String firstToken = a.next().toLowerCase();
 
-
+					// parse the relation
 					if (firstToken.toLowerCase().equals(RELATION)) {
 						relationName = a.nextLine();
-						System.out.println("@Relation extracted.");
-					}else if(firstToken.toLowerCase().equals(ATTRIBUTE)){
+						
+					}
+					// parse the attributes
+					else if(firstToken.toLowerCase().equals(ATTRIBUTE)){
 						TreeMap<String, Integer> ste = new TreeMap<String, Integer>();
 						strToEnum.add(ste);
 						TreeMap<Integer, String> ets = new TreeMap<Integer, String>();
@@ -169,7 +182,7 @@ public class DataTable {
 						}
 
 						//	ignore the Class attribute
-						if(!attributeName.toLowerCase().equals(CLASS)){
+						if(!attributeName.equalsIgnoreCase(CLASS)){
 
 							Attribute attribute = new Attribute();
 							attribute.setName(attributeName);
@@ -197,19 +210,16 @@ public class DataTable {
 								attributes.add(attribute);	
 
 							}catch(Exception e){
-								throw new Exception("Error occured while parsinge @attribute at line: " + line + "\n" + e.toString());
+								logger.info("Error occured while parsinge @attribute at line: " + line + "\n" + e.toString() +  "///// " + e.getMessage());
 							}
 						}
 
-					}else if (firstToken.toLowerCase().equals(DATA)) {
+					}else if (firstToken.toLowerCase().equals(DATA)) { // attribute secition is over.
 						readData = true;
-						System.out.println("@Attributes extracted.");
 					}
 
 
 				}else{ // data section starts from now
-
-					int valueIndex = 0;
 
 					try{
 
@@ -234,7 +244,6 @@ public class DataTable {
 						String classLabel = sample.getSampleValues().remove(sample.getSampleValues().size()-1);
 						sample.setClassLabel(classLabel.toLowerCase());
 						sample.setClassLabelValue(Boolean.valueOf(classLabel.toLowerCase()));
-						//						System.out.println(sample.getSampleValues().size()+"");
 
 						if(sample.getSampleValues().size() != 274){
 							System.out.println("eksik deðer.. SampleId:" + sample.getId());
@@ -242,7 +251,7 @@ public class DataTable {
 						samples.add(sample);
 
 					}catch(Exception e){
-						throw new Exception("Error occured while parsinge @data at line: " + line + "\n" + e.toString());
+						logger.info("Error occured while parsinge @data at line: " + line + "\n" + e.toString() +  "///// " + e.getMessage());
 					}
 				}
 			}
@@ -251,11 +260,11 @@ public class DataTable {
 
 		}
 
-		System.out.println("@Data extracted.");
-
-
 	}
 
+	/**
+	 * Calculates the entropy for table
+	 */
 	public void calculateGeneralEntropy() {
 
 		int size = getSamples().size();
@@ -289,7 +298,76 @@ public class DataTable {
 
 	}
 
+	/**
+	 * Creates entire attributes for the ID3 algorithm
+	 * This set does not include the target attribute 
+	 * @param dataSet
+	 * @return
+	 */
+	public LinkedHashSet<Attribute> createAllAttributesAndFindMostCommonUsedValue () {
+		LinkedHashSet<Attribute> attributes = new LinkedHashSet<Attribute>();
+		for (Attribute attribute : getAttributes()) {
+
+			List<Occurrence> valueOccurrences = TableManager.getAttributeValueOccurrences(attribute.getColumnIndex(),this);
+
+			String mostCommonValue = "";
+			int mostCommonValueCount = 0;
+			for (Occurrence occurrence : valueOccurrences) {
+
+				int numberOfOccurred = occurrence.getNumberOfoccurrences();
+
+				if(numberOfOccurred > mostCommonValueCount){
+					mostCommonValue = occurrence.getValueName();
+					mostCommonValueCount = numberOfOccurred;
+				}
+			}
+
+			attribute.setMostCommonValue(mostCommonValue);
+			attributes.add(attribute);
+
+		}
+		return attributes;
+	}
 
 
+	/**
+	 * Number of instances with class targetFlag
+	 * @param targetFlag
+	 * @return
+	 */
+	public int getNumberOfInstances(Boolean targetFlag) {
 
+		int numberOf = 0;
+
+		for (SampleObject sampleObject : getSamples()) {
+
+			if(sampleObject.getClassLabel().toLowerCase().equals(targetFlag.toString().toLowerCase())){
+				numberOf++;
+			}
+		}
+		return numberOf;
+	}
+	
+	
+	/**
+	 * returns the most common used target attribute in given samples
+	 * @param samples
+	 * @return
+	 */
+	public Label getMostCommonUsedClassLabel() {
+
+		int positives = 0;
+		int negatives = 0;
+
+		for (SampleObject sampleObject : samples) {
+
+			if(sampleObject.getClassLabelValue()){
+				positives++;
+			}else{
+				negatives++;
+			}
+		}
+
+		return positives > negatives ? new Label(Boolean.TRUE) : new Label(Boolean.FALSE);
+	}
 }

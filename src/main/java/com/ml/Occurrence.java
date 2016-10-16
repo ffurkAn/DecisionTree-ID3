@@ -1,5 +1,12 @@
 package com.ml;
 
+
+/**
+ * Occurrence class holds the statistics for a particular value in attribute
+ * such as number of value occurrences, number of positive ones. 
+ * @author furkan
+ *
+ */
 public class Occurrence {
 	
 	private String valueName;
@@ -12,7 +19,6 @@ public class Occurrence {
 		numberOfPositiveOccurrences = posOcc;
 		this.valueName = valueName;
 	}
-
 	
 	public String getValueName() {
 		return valueName;
@@ -22,7 +28,6 @@ public class Occurrence {
 	public void setValueName(String valueName) {
 		this.valueName = valueName;
 	}
-
 
 	public int getNumberOfoccurrences() {
 		return numberOfoccurrences;
@@ -37,5 +42,7 @@ public class Occurrence {
 		this.numberOfPositiveOccurrences = numberOfPositiveOccurrences;
 	}
 
-	
+	public int getNumberOfNegativeOccurrences(){
+		return numberOfoccurrences - numberOfPositiveOccurrences;
+	}
 }
