@@ -2,12 +2,16 @@ package com.ml;
 
 import java.util.ArrayList;
 
+/**
+* This class holds the line of data with its classifier attribute 'Yes-or-No'
+*
+*/
 public class SampleObject {
 
 	private int id;
 	private String classLabel;
-	private Boolean classLabelValue;
-	private ArrayList<String> sampleValues;
+	private Boolean classLabelValue; // True or False
+	private ArrayList<String> sampleValues; // holds the values separated with comma
 
 	public SampleObject(int id, String label, ArrayList<String> sampleValues) {
 	

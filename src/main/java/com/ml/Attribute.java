@@ -5,11 +5,10 @@ import java.util.LinkedHashSet;
 
 public class Attribute {
 
-	private LinkedHashSet<String> values;
+	private LinkedHashSet<String> values; // holds the values
 	private String name;
-	private int columnIndex;
-	private String mostCommonValue;
-	private boolean isProccessed = false;
+	private int columnIndex; // index of the @data
+	private String mostCommonValue; // most occurred value in the training set
 	
 	public Attribute(LinkedHashSet<String> values, String name, int columnIndex) {
 		super();
@@ -19,14 +18,6 @@ public class Attribute {
 	}
 	
 	public Attribute(){}
-	
-	public boolean isProccessed() {
-		return isProccessed;
-	}
-
-	public void setProccessed(boolean isProccessed) {
-		this.isProccessed = isProccessed;
-	}
 
 	public int getColumnIndex() {
 		return columnIndex;

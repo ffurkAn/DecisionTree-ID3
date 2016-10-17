@@ -20,6 +20,9 @@ public class DecisionTree {
 		this.rootNode = rootNode;
 	}
 
+	/**
+	* uses the test dataset and visits nodes by its matching value
+	*/
 	public void testTree(DataTable testDataTable) {
 		
 		int numberOfAccurate = 0;
@@ -36,7 +39,7 @@ public class DecisionTree {
 		
 		double accuracy = ((double)numberOfAccurate / (numberOfAccurate + numberOfNotAccurate)) * 100;
 		
-		System.out.println("Accuracy of the tree is: " + accuracy);
+		System.out.printf("\nAccuracy of the tree is: %.3f\n",accuracy);
 		
 		
 		

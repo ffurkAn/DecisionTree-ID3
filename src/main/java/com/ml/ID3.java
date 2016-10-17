@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public class ID3 {
 	private int nodeCount;
-	private double threshold = 10;
+	private double threshold = 200;
 	Logger logger = Logger.getGlobal();
 
 	public ID3() {
@@ -43,14 +43,12 @@ public class ID3 {
 		if(areAllSamplesBelongToSameClass(dataSet.getSamples(), Boolean.TRUE)){
 			Label lbl = new Label(Boolean.TRUE);
 			root.setClassLabel(lbl);
-			root.setSamples(dataSet.getSamples());
 			
 		}
 		// If all examples are negative, Return the single-node tree Root, with label = -.
 		else if(areAllSamplesBelongToSameClass(dataSet.getSamples(), Boolean.FALSE)){
 			Label lbl = new Label(Boolean.FALSE);
 			root.setClassLabel(lbl);
-			root.setSamples(dataSet.getSamples());
 
 		}
 		//If number of predicting attributes is empty, then Return the single node tree Root,
@@ -58,21 +56,17 @@ public class ID3 {
 		else if(attributes.isEmpty()){
 			Label lbl = new Label(dataSet.getMostCommonUsedClassLabel().getLabelValue());
 			root.setClassLabel(lbl);
-			root.setSamples(dataSet.getSamples());
 
 		}else{
 
 			//The Attribute that best classifies examples.
 			Attribute bestAttribute = findBestAttribute(dataSet,attributes);
-			bestAttribute.setProccessed(true);
 			root.setAttribute(bestAttribute);
 
-			// FIXME there is sth wrong with chi-square
 			double chiSquareStatistic = TableManager.chiSquareTest(bestAttribute,dataSet);
 			if(chiSquareStatistic < threshold){
 				Label lbl = new Label(dataSet.getMostCommonUsedClassLabel().getLabelValue());
 				root.setClassLabel(lbl);
-				root.setSamples(dataSet.getSamples());
 
 			}else{
 
@@ -86,7 +80,6 @@ public class ID3 {
 					if(valueDataSet.getSamples().isEmpty()){
 						Node leafNode = new Node(nodeCount);
 						leafNode.setClassLabel(dataSet.getMostCommonUsedClassLabel());
-						leafNode.setSamples(new ArrayList<>());
 						root.addBranch(value,leafNode);
 
 					}else{
@@ -135,7 +128,6 @@ public class ID3 {
 
 
 
-	// TODO paydayý samples.size() mý yapmalýyýz /totalOccurrenceOfAttribute
 	private double calculateGain(int attIndex, DataTable dataSet) {
 
 		// attribute value occurrences for the attribute with index @attIndex

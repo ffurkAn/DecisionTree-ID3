@@ -7,7 +7,7 @@ public class TableManager {
 
 	
 	/**
-	 * 
+	 * returns the samples only with 'columnIndex'th attribute matching with 'value'
 	 * @param columnIndex
 	 * @param value
 	 * @param dataSet
@@ -39,7 +39,7 @@ public class TableManager {
 	 */
 	public static ArrayList<Occurrence> getAttributeValueOccurrences(int attIndex, DataTable dataSet) {
 
-		// attribute.value occurrences, #of positive sample
+		// Occurrence <attribute.value occurrences, #of positive sample>
 		ArrayList<Occurrence> occurrences = new ArrayList<>();
 
 		int valueCountOfAttribute = dataSet.getEnumToStr().get(attIndex).size();
@@ -67,6 +67,7 @@ public class TableManager {
 	
 
 	/**
+	 * not used!!!!!
 	 * trim ' \ / ( ) [ ] ; characters from value
 	 * @param dirtyValue
 	 * @return

@@ -144,7 +144,6 @@ public class DataTable {
 
 		Scanner s = new Scanner(new File(fileName));
 
-		System.out.println("Started to parsing file..");
 		logger.info("Started to parsing file..");
 		while (s.hasNext()) {
 
@@ -172,7 +171,7 @@ public class DataTable {
 						enumToStr.add(ets);
 
 						Scanner b = new Scanner(line);
-						if (line.indexOf("'") == 11) {
+						if (line.indexOf("'") == 11) { //index 11 is the beginning of the attribute name
 							b.useDelimiter("'");
 						}
 						b.next();
@@ -240,7 +239,7 @@ public class DataTable {
 
 						}
 
-						// remove the classifier
+						// remove the classifier from sample
 						String classLabel = sample.getSampleValues().remove(sample.getSampleValues().size()-1);
 						sample.setClassLabel(classLabel.toLowerCase());
 						sample.setClassLabelValue(Boolean.valueOf(classLabel.toLowerCase()));

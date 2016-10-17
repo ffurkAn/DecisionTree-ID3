@@ -15,7 +15,6 @@ public class Node {
 	private Node parent;
 	private int level;
 	private Label classLabel;
-	private List<SampleObject> samples;
 	
 
 	public Node(LinkedHashMap<String, Node> children, Attribute attribute, Node parent) {
@@ -47,14 +46,6 @@ public class Node {
 
 	public void setClassLabel(Label classLabel) {
 		this.classLabel = classLabel;
-	}
-
-	public List<SampleObject> getSamples() {
-		return samples;
-	}
-
-	public void setSamples(List<SampleObject> samples) {
-		this.samples = samples;
 	}
 
 	public LinkedHashMap<String, Node> getChildren() {
@@ -144,6 +135,7 @@ public class Node {
 
 	/**
 	 * travels the tree and checks if it is matching with the leaf
+	 * If matching value is matching, choose that branch and compare the next value of sample
 	 * @param sample
 	 * @param columnIndex
 	 * @return
@@ -159,7 +151,7 @@ public class Node {
 			// if value is missing, choose the most cammon value branch
 			if(sample.get(columnIndex).equals(MISSING_VALUE)){
 				Node childNode = children.get(attribute.getMostCommonValue());
-				if(childNode.getAttribute() == null){
+				if(childNode.getAttribute() == null){ // leaf node
 					classDecision = childNode.getClassLabel().getLabelStr();
 				}else{
 					classDecision = childNode.makeDecision(sample, childNode.getAttribute().getColumnIndex());
@@ -170,10 +162,10 @@ public class Node {
 					if(value.equals(entry.getKey())){
 						
 						Node childNode = children.get(entry.getKey());
-						if(childNode.getAttribute() == null){
+						if(childNode.getAttribute() == null){ // leaf node
 							classDecision = childNode.getClassLabel().getLabelStr();
 						}else{
-							classDecision = childNode.makeDecision(sample, childNode.getAttribute().getColumnIndex());
+							classDecision = childNode.makeDecision(sample, childNode.getAttribute().getColumnIndex()); // go for the next value
 						}
 					}
 				}
